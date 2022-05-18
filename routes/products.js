@@ -22,8 +22,8 @@ router.get('/:productData', async function (req, res, next) {
  ****************************************************************************************/
 
 router.post('/', function(req, res, next) {
-    model.create(req.body);
-    res.status(200).send();
+    const status = model.create(req.body) ? 400 : 200;
+    res.status(status).send();
 });
 
 /***************************************************************************************
@@ -31,16 +31,16 @@ router.post('/', function(req, res, next) {
  ****************************************************************************************/
 
 router.put('/', function(req, res, next) {
-    model.update(req.body);
-    res.status(200).send();
+    const status = model.update(req.body) ? 400 : 200;
+    res.status(status).send();
 });
 
 /***************************************************************************************
  * DELETE methods
  ****************************************************************************************/
 router.delete('/:sku', function(req, res, next) {
-    model.delete(req.params.sku);
-    res.status(200).send();
+    const status = model.delete(req.params.sku) ? 400 : 200;
+    res.status(status).send();
 });
 
 module.exports = router;

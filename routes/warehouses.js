@@ -21,24 +21,24 @@ router.get('/:productData', async function(req, res, next) {
   * POST methods
  ****************************************************************************************/
 router.post('/', function(req, res, next) {
-    model.create(req.body);
-    res.status(200).send();
+    const status = model.create(req.body) ? 400 : 200;
+    res.status(status).send();
 });
 
 /***************************************************************************************
   * UPDATE methods
  ****************************************************************************************/
 router.put('/', function(req, res, next) {
-    model.update(req.body);
-    res.status(200).send();
+    const status = model.update(req.body) ? 400 : 200;
+    res.status(status).send();
 });
 
 /***************************************************************************************
   * UPDATE methods
  ****************************************************************************************/
 router.delete('/:id', function(req, res, next) {
-    model.delete(req.params.id);
-    res.status(200).send();
+    const status = model.delete(req.params.id) ? 400 : 200;
+    res.status(status).send();
 });
 
 module.exports = router;

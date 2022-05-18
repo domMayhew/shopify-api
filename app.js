@@ -1,3 +1,9 @@
+/**
+ * This module links all the other pieces together.
+ * It connects the routers frome /routes to the app
+ * and sets up some generic error handlers and other middleware.
+ */
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');

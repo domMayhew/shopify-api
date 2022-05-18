@@ -10,8 +10,8 @@ const {getFromParam} = require('./parse-request');
   * Get methods
  ****************************************************************************************/
 
-router.get('/', function(req, res, next) {
-    res.send(bulkGet(req, model));
+router.get('/', async function(req, res, next) {
+    res.send(await bulkGet(req, model));
 });
 
 /***************************************************************************************
@@ -19,8 +19,8 @@ router.get('/', function(req, res, next) {
  ****************************************************************************************/
 
 router.post('/', function(req, res, next) {
-    model.create(req.body);
-    res.status(200).send();
+    const status = model.create(req.body) ? 400 : 200;
+    res.status(status).send();
 });
 
 module.exports = router;
