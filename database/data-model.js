@@ -172,19 +172,14 @@ function getWarehouses(offset = 0, count = 50) {
 
 // INVENTORY CHANGES
 
-function getInventoryChanges(sku, offset = 0, count = 50) {
-    const statement = db
-        .prepare("SELECT inventory_change.id AS id, sku, products.name, warehouse.name, quantity " +
+function getInventoryChanges(offset = 0, count = 50) {
+    return db
+        .prepare("SELECT inventory_change.id AS id, sku, product.name, warehouse.name, quantity " +
                  "FROM inventory_change " +
                  "INNER JOIN product USING(sku) " +
                  "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
-                 "LIMIT ?, ? "
-                 (sku ? "WHERE sku = ?" : ""));
-    if (sku) {
-        return statement.all(count, offset, sku);
-    } else {
-        return statement.all(count, offset);
-    }
+                 "LIMIT ?, ? ")
+        .get(offset, count);
 }
 
 // HELPER FUNCTIONS
@@ -207,22 +202,28 @@ function getInventoryForWarehouse(id) {
 
 getWarehouses(10, 4).forEach(datum => console.log(datum.toString()));
 
- /***************************************************************************************
+/***************************************************************************************
  * Export. Used CommonJS instead of ES Modules for consistency with the rest of the app.
  ****************************************************************************************/
 
- module.exports = {
-     Product: Product,
-     Warehouse: Warehouse,
-     InventoryChange: InventoryChange,
+module.exports = {
+    products: {
+        class: Product,
+        getById: getProductsBySKU,
+        getByName: getProductsByName,
+        get: getProducts,
+    },
 
-     getProductsBySKU: getProductsBySKU,
-     getProductsByName: getProductsByName,
-     getProducts: getProducts,
+    warehouses: {
+        class: Warehouse,
+        getById: getWarehousesById,
+        getByName: getWarehousesByName,
+        get: getWarehouses,
 
-     getWarehousesById: getWarehousesById,
-     getWarehousesByName: getWarehousesByName,
-     getWarehouses: getWarehouses,
+    },
 
-     getInventoryChanges: getInventoryChanges
- }
+    inventoryChanges: {
+        class: InventoryChange,
+        get: getInventoryChanges
+    }
+}
