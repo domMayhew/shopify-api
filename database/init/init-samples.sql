@@ -5,13 +5,13 @@
 -- 7 example warehouses in 5 cities
 INSERT INTO warehouse (city_id, name)
     VALUES
-        (1, "Calgary - Downtown"),
-        (1, "Calgary - South"),
-        (2, "Nelson - Main"),
-        (3, "Vacouver Burnaby"),
-        (3, "Vancouver - Pitt Meadows"),
-        (4, "Santiago - West side"),
-        (5, "Kolkata - Main");
+        (5913490, "Calgary - Downtown"),
+        (5913490, "Calgary - South"),
+        (6086871, "Nelson - Main"),
+        (5911606, "Vacouver Burnaby"),
+        (6105815, "Vancouver - Pitt Meadows"),
+        (3871336, "Santiago - West side"),
+        (1275004, "Kolkata - Main");
 
 -- 6 example products. Prices in dollars
 INSERT INTO product (name, description, price)
