@@ -5,7 +5,7 @@
  * All others should interface with the database through this module.
  */
 
- const db = new require('better-sqlite3')('db.sqlite');
+ const db = new require('better-sqlite3')('./database/db.sqlite');
 
  /***************************************************************************************
  * Classes. These define the logical structure of the business data.
@@ -137,18 +137,6 @@ function getProducts(offset = 0, count = 50) {
 
 // WAREHOUSES
 
-function getWarehousesByName(...names) {
-    return names.map(name => {
-        const house = new Warehouse(
-            db
-                .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.name = ?")
-                .get(name)
-        );
-        house.inventory = getInventoryForWarehouse(house.id);
-        return house;
-    });
-}
-
 function getWarehousesById(...ids) {
     return ids.map(id => {
         const house = new Warehouse(
@@ -157,6 +145,18 @@ function getWarehousesById(...ids) {
                 .get(id)
         );
         house.inventory = getInventoryForWarehouse(id);
+        return house;
+    });
+}
+
+function getWarehousesByName(...names) {
+    return names.map(name => {
+        const house = new Warehouse(
+            db
+                .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.name = ?")
+                .get(name)
+        );
+        house.inventory = getInventoryForWarehouse(house.id);
         return house;
     });
 }
@@ -206,3 +206,23 @@ function getInventoryForWarehouse(id) {
 }
 
 getWarehouses(10, 4).forEach(datum => console.log(datum.toString()));
+
+ /***************************************************************************************
+ * Export. Used CommonJS instead of ES Modules for consistency with the rest of the app.
+ ****************************************************************************************/
+
+ module.exports = {
+     Product: Product,
+     Warehouse: Warehouse,
+     InventoryChange: InventoryChange,
+
+     getProductsBySKU: getProductsBySKU,
+     getProductsByName: getProductsByName,
+     getProducts: getProducts,
+
+     getWarehousesById: getWarehousesById,
+     getWarehousesByName: getWarehousesByName,
+     getWarehouses: getWarehouses,
+
+     getInventoryChanges: getInventoryChanges
+ }
