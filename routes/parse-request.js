@@ -6,21 +6,21 @@
   * Get methods
  ****************************************************************************************/
 
-function bulkGet(req, model) {
+async function bulkGet(req, model) {
     const query = req.query;
     if (query.offset && query.count) {
-        return model.get(query.offset, query.count);
+        return await model.get(query.offset, query.count);
     } else {
-        return model.get();
+        return await model.get();
     }
 }
 
-function getFromParam(req, model) {
+async function getFromParam(req, model) {
     const sku = parseInt(req.params.productData);
     if (!isNaN(sku)) {
-        return model.getById(sku);
+        return await model.getById(sku);
     } else {
-        return model.getByName(req.params.productData);
+        return await model.getByName(req.params.productData);
     }    
 }
 

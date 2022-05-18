@@ -5,6 +5,9 @@
  * All others should interface with the database through this module.
  */
  const db = new require('better-sqlite3')('./database/db.sqlite');
+ const axios = require('axios');
+ const openWeatherURI = "https://api.openweathermap.org/data/2.5/weather"
+ const openWeatherAPIKey = "413b2ed640294b5fe5da8c707f9d5fb4";
 
  /***************************************************************************************
  * Classes. These define the logical structure of the business data.
@@ -39,12 +42,13 @@ class Product {
 }
 
 class Warehouse {
-    constructor({id, name, cityName, inventory = []}) {
+    constructor({id, name, cityId, cityName, inventory= []}) {
         if (!id || !name) {
             throw new Error("Warehouse cannot be constructed without id and name provided.")
         }
         this.id = id;
         this.name = name;
+        this.cityId = cityId;
         this.cityName = cityName;
         this.inventory = inventory;
     }
@@ -90,82 +94,58 @@ class InventoryChange {
 function inventoryReducer(sum, {quantity}) { return sum + quantity}
 
 
- /***************************************************************************************
+/***************************************************************************************
  * Read functions.
  * Objects can be accessed by id, name, or in bulk.
  * The result is an array of values which will be empty if there are is no matching data.
  ****************************************************************************************/
 
- // PRODUCTS
+// PRODUCTS
+const productQueryString = "SELECT sku, name, price, description FROM product ";
 
-function getProductsBySKU(...skus) {
-    return skus.map((sku) => {
-        const product = new Product(
-            db
-                .prepare("SELECT sku, name, price, description FROM product WHERE sku = ?")
-                .get(sku)
-        );
-        product.inventory = getInventoryForSKU(sku);
-        return product;
-    });
+async function getProductsBySKU(...skus) {
+    return await dbProductQuery(productQueryString, "WHERE sku = ?", skus, Product);
 }
 
-function getProductsByName(...names) {
-    // Map every name to a Product object.
-    return names.map((name) => {
-        const product = new Product(
-            db
-                .prepare("SELECT sku, name, price, description FROM product WHERE name = ?")
-                .get(name)
-        );
-        product.inventory = getInventoryForSKU(product.sku);
-        return product;
-    });
+async function getProductsByName(...names) {
+    return await dbProductQuery(productQueryString, "WHERE name = ?", names, Product);
 }
 
-function getProducts(offset = 0, count = 50) {
+// TODO
+async function getProducts(offset = 0, count = 50) {
+    let products;
     const rows = db
-        .prepare("SELECT sku, name, price, description " +
-                 "FROM product " +
-                 "LIMIT ?, ?")
+        .prepare(productQueryString + "LIMIT ?, ?")
         .all(offset, count);
-    const products = rows.map(row => new Product(row));
-    products.forEach(product => product.inventory = getInventoryForSKU(product.sku));
+    products = rows.map(row => new Product(row));
+    for (const product of products) {
+        product.inventory = await getInventoryForSKU(product.sku);
+    }
     return products;
 }
 
 // WAREHOUSES
+const warehouseQueryString = "SELECT warehouse.id AS id, warehouse.name AS name, " +
+                             "city_id AS cityId, city.name AS cityName " +
+                             "FROM warehouse INNER JOIN city ON city_id = city.id ";
 
-function getWarehousesById(...ids) {
-    return ids.map(id => {
-        const house = new Warehouse(
-            db
-                .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.id = ?")
-                .get(id)
-        );
-        house.inventory = getInventoryForWarehouse(id);
-        return house;
-    });
+async function getWarehousesById(...ids) {
+    return await dbWarehouseQuery(warehouseQueryString, "WHERE warehouse.id = ?", ids, Warehouse);
 }
 
-function getWarehousesByName(...names) {
-    return names.map(name => {
-        const house = new Warehouse(
-            db
-                .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.name = ?")
-                .get(name)
-        );
-        house.inventory = getInventoryForWarehouse(house.id);
-        return house;
-    });
+async function getWarehousesByName(...names) {
+    return await dbWarehouseQuery(warehouseQueryString, "WHERE warehouse.name = ?", names, Warehouse);
 }
 
-function getWarehouses(offset = 0, count = 50) {
+async function getWarehouses(offset = 0, count = 50) {
     const rows = db
-        .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id LIMIT ?, ?")
+        .prepare(warehouseQueryString + "LIMIT ?, ?")
         .all(offset, count);
     const houses = rows.map(row => new Warehouse(row));
-    houses.forEach(house => house.inventory = getInventoryForWarehouse(house.id));
+    for (const house of houses) {
+        house.inventory = getInventoryForWarehouse(house.id);
+        house.weather = await getWeatherForCity(house.cityId);
+    };
     return houses;
 }
 
@@ -183,12 +163,44 @@ function getInventoryChanges(offset = 0, count = 50) {
 
 // HELPER FUNCTIONS
 
-function getInventoryForSKU(sku) {
-    return db
-        .prepare("SELECT id, name, quantity FROM inventory " +
-                "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
-                "WHERE sku = ? ")
+async function dbProductQuery(sqlQuery, sqlCondition, sqlArgs) {
+    const data = new Array(sqlArgs.length);
+    const promises = new Array(sqlArgs.length);
+    const statement = db.prepare(sqlQuery + sqlCondition);
+    for (let i = 0; i < sqlArgs.length; i++) {
+        data[i] = new Product(statement.get(sqlArgs[i]));
+        promises[i] = getInventoryForSKU(data[i].sku)
+            .then(resolved => data[i].inventory = resolved);
+    };
+    await Promise.all(promises);
+    return data;
+}
+
+async function dbWarehouseQuery(sqlQuery, sqlCondition, sqlArgs) {
+    const data = new Array(sqlArgs.length);
+    const promises = new Array(sqlArgs.length);
+    const statement = db.prepare(sqlQuery + sqlCondition);
+    for (let i = 0; i < sqlArgs.length; i++) {
+        data[i] = new Warehouse(statement.get(sqlArgs[i]));
+        promises[i] = getWeatherForCity(data[i].cityId)
+            .then(resolved => data[i].weather = resolved);
+    };
+    await Promise.all(promises);
+    return data;
+}
+
+async function getInventoryForSKU(sku) {
+    inventory = db
+        .prepare("SELECT city.id AS cityId, warehouse.id AS warehouseID, warehouse.name AS warehouseName, quantity " +
+                 "FROM inventory " +
+                 "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
+                 "INNER JOIN city ON city_id = city.id " +
+                 "WHERE sku = ? ")
         .all(sku);
+    for (const record of inventory) {
+        record.weather = await getWeatherForCity(record.cityId);
+    }
+    return inventory;
 }
 
 function getInventoryForWarehouse(id) {
@@ -198,6 +210,28 @@ function getInventoryForWarehouse(id) {
                  "INNER JOIN product USING(sku) " +
                  "WHERE warehouse_id = ? ")
         .all(id);
+}
+
+const getWeatherForCity = createCache(async (cityId) => {
+    try {
+        const {data} = await axios.get(openWeatherURI + "?id=" + cityId + "&units=metric" + "&appid=" + openWeatherAPIKey);
+        return data.main.temp + "°C, " + data.weather[0].description;
+    } catch (err) {
+        console.log("Error thrown accessing OpenWeather: (cityId:" + cityId + ")" + err);
+        return "Unable to obtain weather.";
+    }
+}, 30);
+
+function createCache(f, minutes) {
+    const cache = {};
+    return async (arg) => {
+        if (cache[arg] && cache[arg].timestamp - Date.now() < minutes * 60 * 1000) {
+            return cache[arg].data;
+        } else {
+            cache[arg] = { timestamp: Date.now() };
+            return cache[arg].data = await f(arg);
+        }
+    }
 }
 
 /***************************************************************************************
@@ -224,9 +258,7 @@ function createInventoryChange(inventoryChange) {
     if (!sku || !warehouse_id || !quantity) {
         return false;
     } else {
-        console.log(getInventoryForWarehouse(warehouse_id).filter(record => record.sku == sku));
         let currInventory = getInventoryForWarehouse(warehouse_id).filter(record => record.sku == sku)[0].quantity;
-        console.log(currInventory);
         if (!currInventory) {
             currInventory = 0;
         }

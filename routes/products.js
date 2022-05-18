@@ -9,12 +9,12 @@ const {getFromParam} = require('./parse-request');
   * Get methods
  ****************************************************************************************/
 
-router.get('/', function(req, res, next) {
-    res.send(bulkGet(req, model));
+router.get('/', async function(req, res, next) {
+    res.send(await bulkGet(req, model));
 });
 
-router.get('/:productData', function (req, res, next) {
-    res.send(getFromParam(req, model))
+router.get('/:productData', async function (req, res, next) {
+    res.send(await getFromParam(req, model));
 });
 
 /***************************************************************************************
