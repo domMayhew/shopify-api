@@ -5,7 +5,7 @@
  * All others should interface with the database through this module.
  */
 
-const db = new require('better-sqlite3')('db.sqlite');
+ const db = new require('better-sqlite3')('db.sqlite');
 
  /***************************************************************************************
  * Classes. These define the logical structure of the business data.
@@ -124,12 +124,12 @@ function getProductsByName(...names) {
     });
 }
 
-function getProducts(offset, count = 50) {
-    const statement = db
+function getProducts(offset = 0, count = 50) {
+    const rows = db
         .prepare("SELECT sku, name, price, description " +
                  "FROM product " +
-                 (offset && count ? "LIMIT ?, ?" : ""));
-    const rows = (offset && count ? statement.all(offset, count) : statement.all());
+                 "LIMIT ?, ?")
+        .all(offset, count);
     const products = rows.map(row => new Product(row));
     products.forEach(product => product.inventory = getInventoryForSKU(product.sku));
     return products;
@@ -161,11 +161,10 @@ function getWarehousesById(...ids) {
     });
 }
 
-function getWarehouses(offset, count = 50) {
-    const statement = db
-        .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id" +
-                 (offset && count ? "LIMIT ?. ?" : ""));
-    const rows = (offset && count ? statement.all(offset, count) : statement.all());
+function getWarehouses(offset = 0, count = 50) {
+    const rows = db
+        .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id LIMIT ?, ?")
+        .all(offset, count);
     const houses = rows.map(row => new Warehouse(row));
     houses.forEach(house => house.inventory = getInventoryForWarehouse(house.id));
     return houses;
@@ -173,22 +172,18 @@ function getWarehouses(offset, count = 50) {
 
 // INVENTORY CHANGES
 
-function getInventoryChanges(sku, offset, count = 50) {
+function getInventoryChanges(sku, offset = 0, count = 50) {
     const statement = db
         .prepare("SELECT inventory_change.id AS id, sku, products.name, warehouse.name, quantity " +
                  "FROM inventory_change " +
                  "INNER JOIN product USING(sku) " +
                  "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
-                 (offset && count ? "LIMIT ?, ? " : "") +
+                 "LIMIT ?, ? "
                  (sku ? "WHERE sku = ?" : ""));
-    if (sku && offset && count) {
+    if (sku) {
         return statement.all(count, offset, sku);
-    } else if (sku) {
-        return statement.all(sku);
-    } else if (offset && count) {
-        return statement.all(offset, count);
     } else {
-        return statement.all();
+        return statement.all(count, offset);
     }
 }
 
@@ -209,3 +204,5 @@ function getInventoryForWarehouse(id) {
                  "WHERE warehouse_id = ? ")
         .all(id);
 }
+
+getWarehouses(10, 4).forEach(datum => console.log(datum.toString()));
