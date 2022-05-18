@@ -1,5 +1,16 @@
+/**
+ * database/data-model.js
+ * This module abstracts the database by mapping the database tables onto logical classes and vice versa.
+ * It is the only module that should access the database directly.
+ * All others should interface with the database through this module.
+ */
+
 const db = new require('better-sqlite3')('db.sqlite');
 
+ /***************************************************************************************
+ * Classes. These define the logical structure of the business data.
+ * The classes are: Product, Warehouse, and InventoryChange.
+ ****************************************************************************************/
 class Product {
     constructor({sku, name, price, description, inventory = []}) {
         if (!sku || !name || !price) {
@@ -74,25 +85,19 @@ class InventoryChange {
     }
 }
 
+/**
+ * Helper function for getting total inventory quantities for a warehouse or product.
+ */
 function inventoryReducer(sum, {quantity}) { return sum + quantity}
 
 
- /**
- * *****************************************************************
- */
+ /***************************************************************************************
+ * Read functions.
+ * Objects can be accessed by id, name, or in bulk.
+ * The result is an array of values which will be empty if there are is no matching data.
+ ****************************************************************************************/
 
-  function getProductsByName(...names) {
-    // Map every name to a Product object.
-    return names.map((name) => {
-        const product = new Product(
-            db
-                .prepare("SELECT sku, name, price, description FROM product WHERE name = ?")
-                .get(name)
-        );
-        product.inventory = getInventoryForSKU(product.sku);
-        return product;
-    });
-}
+ // PRODUCTS
 
 function getProductsBySKU(...skus) {
     return skus.map((sku) => {
@@ -102,6 +107,19 @@ function getProductsBySKU(...skus) {
                 .get(sku)
         );
         product.inventory = getInventoryForSKU(sku);
+        return product;
+    });
+}
+
+function getProductsByName(...names) {
+    // Map every name to a Product object.
+    return names.map((name) => {
+        const product = new Product(
+            db
+                .prepare("SELECT sku, name, price, description FROM product WHERE name = ?")
+                .get(name)
+        );
+        product.inventory = getInventoryForSKU(product.sku);
         return product;
     });
 }
@@ -117,12 +135,30 @@ function getProducts(offset, count = 50) {
     return products;
 }
 
-function getInventoryForSKU(sku) {
-    return db
-        .prepare("SELECT id, name, quantity FROM inventory " +
-                "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
-                "WHERE sku = ? ")
-        .all(sku);
+// WAREHOUSES
+
+function getWarehousesByName(...names) {
+    return names.map(name => {
+        const house = new Warehouse(
+            db
+                .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.name = ?")
+                .get(name)
+        );
+        house.inventory = getInventoryForWarehouse(house.id);
+        return house;
+    });
+}
+
+function getWarehousesById(...ids) {
+    return ids.map(id => {
+        const house = new Warehouse(
+            db
+                .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.id = ?")
+                .get(id)
+        );
+        house.inventory = getInventoryForWarehouse(id);
+        return house;
+    });
 }
 
 function getWarehouses(offset, count = 50) {
@@ -135,24 +171,35 @@ function getWarehouses(offset, count = 50) {
     return houses;
 }
 
-function getWarehouseById(id) {
-    const house = new Warehouse(
-        db
-            .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.id = ?")
-            .get(id)
-    );
-    house.inventory = getInventoryForWarehouse(id);
-    return house;
+// INVENTORY CHANGES
+
+function getInventoryChanges(sku, offset, count = 50) {
+    const statement = db
+        .prepare("SELECT inventory_change.id AS id, sku, products.name, warehouse.name, quantity " +
+                 "FROM inventory_change " +
+                 "INNER JOIN product USING(sku) " +
+                 "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
+                 (offset && count ? "LIMIT ?, ? " : "") +
+                 (sku ? "WHERE sku = ?" : ""));
+    if (sku && offset && count) {
+        return statement.all(count, offset, sku);
+    } else if (sku) {
+        return statement.all(sku);
+    } else if (offset && count) {
+        return statement.all(offset, count);
+    } else {
+        return statement.all();
+    }
 }
 
-function getWarehouseByName(name) {
-    const house = new Warehouse(
-        db
-            .prepare("SELECT warehouse.id AS id, warehouse.name AS name, city.name AS cityName FROM warehouse INNER JOIN city ON city_id = city.id WHERE warehouse.name = ?")
-            .get(name)
-    );
-    house.inventory = getInventoryForWarehouse(house.id);
-    return house;
+// HELPER FUNCTIONS
+
+function getInventoryForSKU(sku) {
+    return db
+        .prepare("SELECT id, name, quantity FROM inventory " +
+                "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
+                "WHERE sku = ? ")
+        .all(sku);
 }
 
 function getInventoryForWarehouse(id) {
@@ -161,19 +208,4 @@ function getInventoryForWarehouse(id) {
                  "INNER JOIN product USING(sku) " +
                  "WHERE warehouse_id = ? ")
         .all(id);
-}
-
-function getInventoryChanges(sku, offset, count = 50) {
-    const statement = db
-        .prepare("SELECT inventory_change.id AS id, sku, products.name, warehouse.name, quantity " +
-                 "FROM inventory_change " +
-                 "INNER JOIN product USING(sku) " +
-                 "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
-                 "LIMIT ? OFFSET ? " +
-                 sku ? "WHERE sku = ?" : "");
-    if (sku) {
-        return statement.all(count, offset, sku);
-    } else {
-        return statement.all(count, offset);
-    }
 }
