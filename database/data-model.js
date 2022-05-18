@@ -94,11 +94,11 @@ class Warehouse {
  * not to "transaction" as it is defined in database theory.
  */
 class Transaction {
-    constructor({id, sku, productName, warehouseName, quantity}) {
+    constructor({id, sku, productName, warehouseId, warehouseName, quantity}) {
         this.id = id;
         this.sku = sku;
         this.productName = productName;
-        this.warehouseID = warehouseID;
+        this.warehouseId = warehouseId;
         this.warehouseName = warehouseName;
         this.quantity = quantity;
     }
@@ -348,11 +348,12 @@ function getInventoryForWarehouse(id) {
  */
 function getTransactions(offset = 0, count = 50) {
     return db
-        .prepare("SELECT inventory_change.id AS id, sku, product.name, warehouse.name, quantity " +
+        .prepare("SELECT inventory_change.id AS id, sku, product.name AS productName, " +
+                 "warehouse.id AS warehouseId, warehouse.name AS warehouseName, quantity " +
                  "FROM inventory_change " +
                  "INNER JOIN product USING(sku) " +
                  "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
-                 "ORDER BY inventory_change.id DESC" +
+                 "ORDER BY inventory_change.id DESC " +
                  "LIMIT ?, ? ")
         .all(offset, count)
         .map(row => new Transaction(row));
@@ -426,19 +427,19 @@ function createWarehouse({name, cityId}) {
     }
 }
 
-function createTransaction({sku, warehouse_id, quantity}) {
+function createTransaction({sku, warehouseId, quantity}) {
     try {
-        let currInventory = getInventoryForWarehouse(warehouse_id).filter(record => record.sku == sku)[0].quantity;
+        let currInventory = getInventoryForWarehouse(warehouseId).filter(record => record.sku == sku)[0].quantity;
         if (!currInventory) {
             currInventory = 0;
         }
         if (currInventory + quantity < 0) {
             return false;
         } else {
-            db.prepare("INSERT INTO inventory_change (sku, warehouse_id, quantity) VALUES(:sku, :warehouse_id, :quantity)")
-                .run(inventoryChange);
+            db.prepare("INSERT INTO inventory_change (sku, warehouse_id, quantity) VALUES(?,?,?)")
+                .run(sku, warehouseId, quantity);
             db.prepare("REPLACE INTO inventory (sku, warehouse_id, quantity) VALUES(?, ?, ?)")
-                .run(sku, warehouse_id, currInventory + quantity);
+                .run(sku, warehouseId, currInventory + quantity);
         }
         return false;
     } catch (err) {
