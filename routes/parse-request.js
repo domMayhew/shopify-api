@@ -1,3 +1,11 @@
+/**
+ * Encapsulates common logic among all routes.
+ */
+
+/***************************************************************************************
+  * Get methods
+ ****************************************************************************************/
+
 function bulkGet(req, model) {
     const query = req.query;
     if (query.offset && query.count) {

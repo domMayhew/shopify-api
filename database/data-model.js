@@ -4,7 +4,6 @@
  * It is the only module that should access the database directly.
  * All others should interface with the database through this module.
  */
-
  const db = new require('better-sqlite3')('./database/db.sqlite');
 
  /***************************************************************************************
@@ -179,7 +178,7 @@ function getInventoryChanges(offset = 0, count = 50) {
                  "INNER JOIN product USING(sku) " +
                  "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
                  "LIMIT ?, ? ")
-        .get(offset, count);
+        .all(offset, count);
 }
 
 // HELPER FUNCTIONS
@@ -194,13 +193,101 @@ function getInventoryForSKU(sku) {
 
 function getInventoryForWarehouse(id) {
     return db
-        .prepare("SELECT sku, name, quantity FROM inventory " +
+        .prepare("SELECT sku, name, quantity " +
+                 "FROM inventory " +
                  "INNER JOIN product USING(sku) " +
                  "WHERE warehouse_id = ? ")
         .all(id);
 }
 
-getWarehouses(10, 4).forEach(datum => console.log(datum.toString()));
+/***************************************************************************************
+ * CREATE functions
+ ****************************************************************************************/
+function createProduct(product) {
+    db.prepare("INSERT INTO product (name, price, description)" +
+               "VALUES (:name, :price, :description)")
+        .run(product);
+}
+
+function createWarehouse(warehouse) {
+    let city = getCityByName(warehouse.cityName);
+    if (!city) {
+        city = createCity(warehouse.cityName);
+    }
+    db.prepare("INSERT INTO warehouse (name, city_id)" + 
+               "VALUES (?, ?)")
+        .run(warehouse.name, city.id);
+}
+
+function createInventoryChange(inventoryChange) {
+    const {sku, warehouse_id, quantity} = inventoryChange;
+    if (!sku || !warehouse_id || !quantity) {
+        return false;
+    } else {
+        console.log(getInventoryForWarehouse(warehouse_id).filter(record => record.sku == sku));
+        let currInventory = getInventoryForWarehouse(warehouse_id).filter(record => record.sku == sku)[0].quantity;
+        console.log(currInventory);
+        if (!currInventory) {
+            currInventory = 0;
+        }
+        if (currInventory + quantity < 0) {
+            return false;
+        } else {
+            db.prepare("INSERT INTO inventory_change (sku, warehouse_id, quantity) VALUES(:sku, :warehouse_id, :quantity)")
+                .run(inventoryChange);
+            db.prepare("REPLACE INTO inventory (sku, warehouse_id, quantity) VALUES(?, ?, ?)")
+                .run(sku, warehouse_id, currInventory + quantity);
+        }
+    }
+}
+
+// HELPER Functions
+
+function getCityByName(name) {
+    return db.prepare("SELECT id, name FROM city WHERE name = ?").get(name);
+}
+
+function createCity(name) {
+    return (db.prepare("INSERT INTO city (name) VALUES (?)")
+                .run(name)).lastInsertRowid;
+}
+
+/***************************************************************************************
+ * UPDATE functions
+ ****************************************************************************************/
+
+function updateProduct(product) {
+    db.prepare("UPDATE product " +
+               "SET name = :name, " +
+                    "price = :price, " +
+                    "description = :description " +
+                "WHERE sku = :sku ")
+        .run(product);
+}
+
+function updateWarehouse(warehouse) {
+    db.prepare("UPDATE warehouse " +
+               "SET name = :name, " +
+                    "city_id = :city_id " +
+                "WHERE id = :id")
+        .run(warehouse);
+}
+
+/***************************************************************************************
+ * DELETE functions
+ ****************************************************************************************/
+
+function deleteProduct(sku) {
+    db.prepare("DELETE FROM product " +
+                "WHERE sku = ?")
+        .run(sku);
+}
+
+function deleteWarehouse(id) {
+    db.prepare("DELETE FROM warehouse " +
+                "WHERE id = ?")
+        .run(id);
+}
 
 /***************************************************************************************
  * Export. Used CommonJS instead of ES Modules for consistency with the rest of the app.
@@ -212,6 +299,10 @@ module.exports = {
         getById: getProductsBySKU,
         getByName: getProductsByName,
         get: getProducts,
+
+        create: createProduct,
+        update: updateProduct,
+        delete: deleteProduct
     },
 
     warehouses: {
@@ -220,10 +311,15 @@ module.exports = {
         getByName: getWarehousesByName,
         get: getWarehouses,
 
+        create: createWarehouse,
+        update: updateWarehouse,
+        delete: deleteWarehouse
     },
 
     inventoryChanges: {
         class: InventoryChange,
-        get: getInventoryChanges
+        get: getInventoryChanges,
+
+        create: createInventoryChange
     }
 }

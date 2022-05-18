@@ -6,7 +6,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var productsRouter = require('./routes/products');
-var warehousesRouter = require('./routes/warehouse.js');
+var warehousesRouter = require('./routes/warehouses.js');
 var inventoryChangesRouter = require('./routes/inventoryChanges');
 
 var app = express();
@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Routes
 app.use('/', indexRouter);
 app.use('/products', productsRouter);
 app.use('/warehouses', warehousesRouter);

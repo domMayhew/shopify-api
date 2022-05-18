@@ -57,29 +57,30 @@ CREATE TABLE inventory_change (
         ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
--- Ensures that no transaction results in a negative quantity of products in a warehouse.
-CREATE TRIGGER validate_transaction_quantity
-    BEFORE INSERT ON inventory_change
-BEGIN
-    SELECT
-        CASE
-            WHEN NEW.quantity * (-1) >
-                    (SELECT quantity FROM inventory
-                        WHERE inventory.warehouse_id = NEW.warehouse_id AND
-                            inventory.sku = NEW.sku)
-                THEN RAISE (ABORT, 'Not enough stock.')
-        END;
-END;
+-- -- Ensures that no transaction results in a negative quantity of products in a warehouse.
+-- CREATE TRIGGER validate_transaction_quantity
+--     BEFORE INSERT ON inventory_change
+-- BEGIN
+--     SELECT
+--         CASE
+--             WHEN NEW.quantity * (-1) >
+--                     (SELECT quantity FROM inventory
+--                         WHERE inventory.warehouse_id = NEW.warehouse_id AND
+--                             inventory.sku = NEW.sku)
+--                 THEN RAISE (ABORT, 'Not enough stock.')
+--         END;
+-- END;
 
--- Adjusts the stock levels at the specified warehouse after a transaction has been submitted.
-CREATE TRIGGER update_inventory_after_transaction
-    AFTER INSERT ON inventory_change
-BEGIN
-    UPDATE inventory
-    SET quantity = quantity + NEW.quantity
-    WHERE inventory.sku = NEW.sku AND
-        inventory.warehouse_id = NEW.warehouse_id;
-END;
+-- -- Adjusts the stock levels at the specified warehouse after a transaction has been submitted.
+-- CREATE TRIGGER update_inventory_after_transaction
+--     AFTER INSERT ON inventory_change
+-- BEGIN
+--     REPLACE INTO inventory (sku, warehouse_id, quantity)
+--     SELECT NEW.sku, NEW.warehouse_id, quantity + NEW.quantity
+--     FROM inventory
+--     WHERE inventory.sku = NEW.sku AND
+--         inventory.warehouse_id = NEW.warehouse_id;
+-- END;
 
 -----------------------------------
 ---------- Initialize data ----------
