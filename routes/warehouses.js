@@ -1,9 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-const model = require('../database/data-model').warehouses;
-const {bulkGet} = require('./queries');
-const {getFromParam} = require('./queries');
+const {warehouseQueries} = require('../database/data-model');
 const viewName = 'warehouses';
 
 /***************************************************************************************
@@ -14,16 +12,22 @@ const viewName = 'warehouses';
  * Retreives warehouses in ascending ID order up to a maximum default value.
  */
 router.get('/', async function(req, res, next) {
-    res.render(viewName, {warehouses: await bulkGet(req, model)});
+    res.render(viewName, {warehouses: await warehouseQueries.get(req.query.offset, req.query.limit)});
 });
 
 /**
- * warehouses/:name <- Retreives at most one value
- * OR
- * warehouses/:id   <- Retreives at most one value
+ * Retrieves at most one warehouse with the given id.
  */
-router.get('/:productData', async function(req, res, next) {
-    res.render(viewName, {warehouses: await getFromParam(req, model)});
+router.get('/id/:id', async function(req, res, next) {
+    res.render(viewName, {warehouses: await warehouseQueries.getById(id)});
+});
+
+/**
+ * Retrieves at most one warehouse with the given name.
+ */
+
+router.get('/name/:name', async function(req, res, next) {
+    res.render(viewName, {warehouses: await warehouseQueries.getByName(name)});
 });
 
 /***************************************************************************************
@@ -32,31 +36,31 @@ router.get('/:productData', async function(req, res, next) {
 /**
  * requires {name, cityId}
  */
-router.post('/', function(req, res, next) {
-    const status = model.create(req.body) ? 400 : 200;
-    res.status(status).send();
+router.post('/', async function(req, res, next) {
+    const status = warehouseQueries.create(req.body) ? 400 : 200;
+    res.render(viewName, {warehouses: await warehouseQueries.getByName(req.body.name)});
 });
 
 /***************************************************************************************
-  * UPDATE methods
+  * PUT methods
  ****************************************************************************************/
 /**
- * requires {name, cityId}
+ * requires {id, name, cityId}
  */
-router.put('/', function(req, res, next) {
-    const status = model.update(req.body) ? 400 : 200;
-    res.status(status).send();
+router.put('/', async function(req, res, next) {
+    const status = warehouseQueries.update(req.body) ? 400 : 200;
+    res.render(viewName, {warehouses: await warehouseQueries.getById(req.body.id)});
 });
 
 /***************************************************************************************
   * DELETE methods
  ****************************************************************************************/
 /**
- * /warehouses/:id
+ * requires {id}
  */
-router.delete('/:id', function(req, res, next) {
-    const status = model.delete(req.params.id) ? 400 : 200;
-    res.status(status).send();
+router.delete('/', async function(req, res, next) {
+    const status = warehouseQueries.delete(req.body.id) ? 400 : 200;
+    res.render(viewName, {warehouses: await warehouseQueries.get()});
 });
 
 module.exports = router;

@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const model = require('../database/data-model');
+const {cityQueries} = require('../database/data-model');
 const viewName = 'cities';
 
 /* GET home page. */
@@ -11,7 +11,7 @@ router.get('/', function(req, res, next) {
     if (!name || !limit) {
         cities = [];
     } else {
-        cities = model.cities.search(name, limit);
+        cities = {cityQueries}.cities.search(name, limit);
     }
     res.render(viewName, {cities: cities});
 });

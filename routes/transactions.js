@@ -1,10 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-const model = require('../database/data-model').inventoryChanges;
-const getWarehousesById = require('../database/data-model').warehouses.getById;
-const {bulkGet} = require('./queries');
-const {getFromParam} = require('./queries');
+const {transactionQueries} = require('../database/data-model');
 const viewName = 'transactions';
 
 /***************************************************************************************
@@ -15,7 +12,7 @@ const viewName = 'transactions';
  ****************************************************************************************/
 
 router.get('/', async function(req, res, next) {
-    res.render(viewName, {transactions: await bulkGet(req, model)});
+    res.render(viewName, {transactions: await transactionQueries.get(req.body.offset, req.body.limit)});
 });
 
 /***************************************************************************************
@@ -23,9 +20,9 @@ router.get('/', async function(req, res, next) {
   * Requires {productId, warehouseId, quantity}
  ****************************************************************************************/
 
-router.post('/', function(req, res, next) {
-    const status = model.create(req.body) ? 400 : 200;
-    res.status(status).send();
+router.post('/', async function(req, res, next) {
+    const status = transactionQueries.create(req.body) ? 400 : 200;
+    res.render(viewName, {transactions: await transactionQueries.get()});
 });
 
 module.exports = router;

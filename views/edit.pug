@@ -1,9 +1,10 @@
 extends layout
 
 block content
+  // _method query used with methodOverride middle ware to turn this POST into a PUT
   h1 Edit
   h2 New Product
-    form(id="productGET" action="/products" method="post")
+    form(id="productPOST" action="/products" method="post")
       div
         label(for="name") Name
         input(type="text" id="name" name="name")
@@ -16,7 +17,6 @@ block content
       input(type="submit" value="Create")
       
   h2 Update Existing Product
-    // _method query used with methodOverride middle ware to turn this POST into a PUT
     form(id="productPUT" action="/products?_method=put" method="post")
       div
         label(for="sku") SKU
@@ -32,9 +32,39 @@ block content
         input(type="text" id="description" name="description")
       input(type="submit" value="Update")
 
-  h2 Delete a product
+  h2 Delete a product #{'('}and all its stock and transactions#{')'}
     form(id="productDELETE" action="/products?_method=delete" method="post")
       div
         label(for="sku") SKU 
         input(type="number" id="sku" name="sku")
+      input(type="submit" value="Delete")
+
+  h2 New Warehouse
+    form(id="warehousePOST" action="/warehouses" method="post")
+      div
+        label(for="name") Name
+        input(type="text" id="name" name="name")
+      div
+        label(for="cityId") CityId
+        input(type="number" id="cityId" name="cityId")
+      input(type="submit" value="Create")
+
+  h2 Update Existing Warehouse
+    form(id="warehousePUT" action="/warehouses?_method=put" method="post")
+      div
+        label(for="id") ID
+        input(type="number" id="id" name="id")
+      div
+        label(for="name") Name
+        input(type="text" id="name" name="name")
+      div
+        label(for="cityId") CityId
+        input(type="number" id="cityId" name="cityId")
+      input(type="submit" value="Update")
+
+  h2 Delete a Warehouse #{'('}and all its stock and transactions#{')'}
+    form(id="warehouseDELETE" action="/warehouses?_method=delete" method="post")
+      div
+        label(for="id") ID
+        input(type="number" id="id" name="id")
       input(type="submit" value="Delete")

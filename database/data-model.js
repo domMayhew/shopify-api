@@ -373,7 +373,7 @@ function getCities() {
 function searchCitiesByName(name, limit) {
     return db
         .prepare("SELECT * FROM city " +
-                 `WHERE name LIKE \'${name}'\ ` +
+                 `WHERE name LIKE \'%${name}%'\ ` +
                  "ORDER BY id " +
                  "LIMIT ? ")
         .all(limit);
@@ -498,7 +498,7 @@ function updateWarehouse(warehouse) {
     try {
         db.prepare("UPDATE warehouse " +
                    "SET name = :name, " +
-                        "city_id = :city_id " +
+                        "city_id = :cityId " +
                     "WHERE id = :id")
             .run(warehouse);
         return false;
@@ -542,9 +542,9 @@ function deleteWarehouse(id) {
  ****************************************************************************************/
 
 module.exports = {
-    products: {
+    productQueries: {
         class: Product,
-        getById: getProductsBySKU,
+        getBySku: getProductsBySKU,
         getByName: getProductsByName,
         get: getProducts,
 
@@ -553,7 +553,7 @@ module.exports = {
         delete: deleteProduct
     },
 
-    warehouses: {
+    warehouseQueries: {
         class: Warehouse,
         getById: getWarehousesById,
         getByName: getWarehousesByName,
@@ -564,12 +564,12 @@ module.exports = {
         delete: deleteWarehouse
     },
 
-    cities: {
+    cityQueries: {
         get: getCities,
         search: searchCitiesByName
     },
 
-    transactions: {
+    transactionQueries: {
         class: Transaction,
         get: getTransactions,
 

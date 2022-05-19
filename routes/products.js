@@ -1,9 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-const model = require('../database/data-model').products;
-const {bulkGet} = require('./queries');
-const {getFromParam} = require('./queries');
+const {productQueries} = require('../database/data-model');
 const viewName = 'products';
 
 /***************************************************************************************
@@ -13,16 +11,21 @@ const viewName = 'products';
  * /products    <- retrieves products in ascending SKU order up to a default maximum number
  */
 router.get('/', async function(req, res, next) {
-    res.render(viewName, {products: await bulkGet(req, model)});
+    res.render(viewName, {products: await productQueries.get(req.body.offset, req.body.limit)});
 });
 
 /**
- * /products/:sku       <- retreives at most one product
- * OR
- * /products/:name      <- retreives at most one product
+ * retrieves at most one product identified by the sku.
  */
-router.get('/:productData', async function (req, res, next) {
-    res.render(viewName, {products: await getFromParam(req, model)});
+router.get('/sku/:sku', async function (req, res, next) {
+    res.render(viewName, {products: await productQueries.getBySku(sku)});
+});
+
+/**
+ * retrieves at most one product identified by the name.
+ */
+router.get('/name/:name', async function(req, res, next) {
+        res.render(viewName, {products: await productQueries.getByName(name)});
 });
 
 /***************************************************************************************
@@ -32,8 +35,8 @@ router.get('/:productData', async function (req, res, next) {
  * requires {name, price, description}
  */
 router.post('/', async function(req, res, next) {
-    const status = model.create(req.body) ? 400 : 200;
-    res.render(viewName, {products: await bulkGet(req, model)});
+    const status = productQueries.create(req.body) ? 400 : 200;
+    res.render(viewName, {products: await productQueries.getByName(req.body.name)});
 });
 
 /***************************************************************************************
@@ -43,8 +46,8 @@ router.post('/', async function(req, res, next) {
  * requires {name, price, description}
  */
 router.put('/', async function(req, res, next) {
-    const status = model.update(req.body) ? 400 : 200;
-    res.render(viewName, {products: await bulkGet(req, model)});
+    const status = productQueries.update(req.body) ? 400 : 200;
+    res.render(viewName, {products: await productQueries.getBySku(req.body.sku)});
 });
 
 /***************************************************************************************
@@ -54,8 +57,8 @@ router.put('/', async function(req, res, next) {
  * requires {sku}
  */
 router.delete('/', async function(req, res, next) {
-    const status = model.delete(req.body.sku) ? 400 : 200;
-    res.render(viewName, {products: await bulkGet(req, model)});
+    const status = productQueries.delete(req.body.sku) ? 400 : 200;
+    res.render(viewName, {products: await productQueries.get()});
 });
 
 module.exports = router;
