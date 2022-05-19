@@ -1,0 +1,23 @@
+extends layout 
+
+block content 
+    div(class="center-horizontal")
+        form(id="citySearch" action="/cities" method="get")
+            label(for="name") City Name
+            input(type="text" id="name" name="name")
+            label(for="limit") Max Cities returned
+            input(type="number" id="limit" name="limit" max="50" value="50")
+            input(type="submit" value="Search")
+    p Displaying #{cities.length} cities.
+    table 
+        thead 
+            tr 
+                td CityId 
+                td Name 
+                td Country
+        tbody
+            each city, index in cities 
+                tr
+                    td #{city.id}
+                    td #{city.name}
+                    td #{city.country}

@@ -361,6 +361,25 @@ function getTransactions(offset = 0, count = 50) {
 }
 
 /**
+ * CITIES read functions. ---------------------------------------------------------------
+ */
+
+function getCities() {
+    return db
+        .prepare("SELECT * FROM city")
+        .all();
+}
+
+function searchCitiesByName(name, limit) {
+    return db
+        .prepare("SELECT * FROM city " +
+                 `WHERE name LIKE \'${name}'\ ` +
+                 "ORDER BY id " +
+                 "LIMIT ? ")
+        .all(limit);
+}
+
+/**
  * Read HELPER functions. ---------------------------------------------------------------
  */
 
@@ -454,12 +473,6 @@ function createTransaction({sku, warehouseId, quantity}) {
     }
 }
 
-// HELPER Functions
-
-function getCityByName(name) {
-    return db.prepare("SELECT id, name FROM city WHERE name = ?").get(name);
-}
-
 /***************************************************************************************
  * UPDATE functions
  * CREATE, UPDATE, and DELETE functions return an error if the operation could not be completed.
@@ -551,7 +564,12 @@ module.exports = {
         delete: deleteWarehouse
     },
 
-    inventoryChanges: {
+    cities: {
+        get: getCities,
+        search: searchCitiesByName
+    },
+
+    transactions: {
         class: Transaction,
         get: getTransactions,
 

@@ -15,6 +15,7 @@ var rootRouter = require('./routes');
 var productsRouter = require('./routes/products');
 var warehousesRouter = require('./routes/warehouses.js');
 var transactionsRouter = require('./routes/transactions');
+var citiesRouter = require('./routes/cities');
 var editRouter = require('./routes/edit');
 
 var app = express();
@@ -35,6 +36,7 @@ app.use('/', rootRouter);
 app.use('/products', productsRouter);
 app.use('/warehouses', warehousesRouter);
 app.use('/transactions', transactionsRouter);
+app.use('/cities', citiesRouter);
 app.use('/edit', editRouter);
 
 // catch 404 and forward to error handler
