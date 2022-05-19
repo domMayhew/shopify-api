@@ -332,7 +332,8 @@ function getInventoryForWarehouse(id) {
         .prepare("SELECT sku, name, quantity " +
                  "FROM inventory " +
                  "INNER JOIN product USING(sku) " +
-                 "WHERE warehouse_id = ? ")
+                 "WHERE warehouse_id = ? " +
+                 "ORDER BY sku ")
         .all(id);
 }
 
