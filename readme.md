@@ -13,6 +13,8 @@ npm start
 I created this app for Shopify's internship application coding challenge. The [task](https://docs.google.com/document/d/1cgmV2DW5mEOxhh5ekyopU4Cef07FNalP7WqAJdgpBuw/edit) is to create a basic inventory tracking web application with CRUD functionality, location tracking for products, and weather tracking in the locations of those products.
 
 ## Architectural Decisions
+I used JavaScript for this application due to its popularity and ease of use. Express.js makes it easy to get a basic app running quickly.
+
 The vast majority of interesting logic/code in this app is contained in the `/database/data-model.js` module. This module maps logical data structures (products, warehouses, and transactions) onto database tables (product, warehouse, inventory, transaction, and city). Any endpoints that access or update business data goes through `/database/data-model.js`.
 
 `data-model.js` uses two interesting techniques to making retrieving weather data fast. Every product that is being viewed needs to retrieve weather data for every warehouse where it is stocked. This means that if there are n products each stocked in m warehouses, there are nxm requests for weather data.
