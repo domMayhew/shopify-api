@@ -1,0 +1,22 @@
+extends layout
+
+block content
+    h1 View Transactions
+    table
+        thead
+            tr
+                th Transaction ID
+                th Warehouse ID 
+                th Warehouse Name 
+                th Product SKU 
+                th Product Name 
+                th Quantity
+        tbody
+            each transaction, index in transactions
+                tr
+                    th #{transaction.id}
+                    th #{transaction.warehouseId}
+                    th #{transaction.warehouseName}
+                    th #{transaction.sku}
+                    th #{transaction.productName}
+                    th #{transaction.quantity}
