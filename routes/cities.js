@@ -14,7 +14,7 @@ router.get('/', function(req, res, next) {
     if (!name || !limit) {
         cities = [];
     } else {
-        cities = {cityQueries}.cities.search(name, limit);
+        cities = cityQueries.search(name, limit);
     }
     res.render(viewName, {cities: cities});
 });
