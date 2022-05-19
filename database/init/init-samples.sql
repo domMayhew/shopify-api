@@ -26,3 +26,10 @@ INSERT INTO product (name, description, price)
 -- Each warehouse has a random quantity of each product.
 INSERT INTO inventory (sku, warehouse_id, quantity)
     SELECT sku, id, 100 * sku + id FROM product CROSS JOIN warehouse;
+
+-- Two sample transactions
+INSERT INTO transaction (sku, warehouse_id, quantity)
+    VALUES
+        (1, 1, 100),
+        (2, 2, 200),
+        (3, 3, -20);

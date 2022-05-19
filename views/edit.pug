@@ -70,6 +70,7 @@ block content
       input(type="submit" value="Delete")
 
   h2 Add a transaction #{'('}Automatically updates the stock in that warehouse.#{')'}
+  p Note that a positive value for quantity represents <em>adding</em> product to a warehouse, a negative value represents <em>removing</em> it.
     form(id="transactionPOST" action="/transactions" method="post")
       div
         label(for="sku") Product SKU 

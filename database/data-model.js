@@ -460,9 +460,10 @@ function createTransaction({sku, warehouseId, quantity}) {
         } else {
             currInventory = currInventory[0].quantity;
         }
-
+        // Quantity is passed from the HTML form as a string.
         quantity = parseInt(quantity);
 
+        // Check that there is enough stock in the warehouse.
         if (currInventory + quantity < 0) {
             return false;
         } else {
