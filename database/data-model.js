@@ -223,7 +223,7 @@ async function getProducts(offset = 0, count = 50) {
  */
 async function getInventoryForSKU(sku) {
     let inventory = db
-        .prepare("SELECT city.id AS cityId, city.name AS cityName, warehouse.id AS warehouseID, warehouse.name AS warehouseName, quantity " +
+        .prepare("SELECT city.id AS cityId, city.name AS cityName, warehouse.id AS warehouseId, warehouse.name AS warehouseName, quantity " +
                  "FROM inventory " +
                  "INNER JOIN warehouse ON warehouse_id = warehouse.id " +
                  "INNER JOIN city ON city_id = city.id " +
@@ -369,13 +369,12 @@ function getTransactions(offset = 0, count = 50) {
  * will result in an Opean Weather API call.
  */
 const getWeatherForCity = createCache(async (cityId) => {
-    try {
-        const {data} = await axios.get(openWeatherURI + "?id=" + cityId + "&units=metric" + "&appid=" + openWeatherAPIKey);
-        return data.main.temp + "°C, " + data.weather[0].description;
-    } catch (err) {
-        console.log("Error thrown accessing OpenWeather: (cityId:" + cityId + ")" + err);
-        return "Unable to obtain weather.";
-    }
+    return axios.get(openWeatherURI + "?id=" + cityId + "&units=metric" + "&appid=" + openWeatherAPIKey)
+        .then( ({data}) => data.main.temp + "°C, " + data.weather[0].description)
+        .catch( err => {
+            console.log("Error thrown accessing OpenWeather: (cityId:" + cityId + ")" + err);
+            return "Unable to obtain weather.";
+        });
 }, 30);
 
 /**
