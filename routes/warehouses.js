@@ -4,6 +4,7 @@ var router = express.Router();
 const model = require('../database/data-model').warehouses;
 const {bulkGet} = require('./queries');
 const {getFromParam} = require('./queries');
+const viewName = 'warehouses';
 
 /***************************************************************************************
  * Get methods
@@ -13,7 +14,7 @@ const {getFromParam} = require('./queries');
  * Retreives warehouses in ascending ID order up to a maximum default value.
  */
 router.get('/', async function(req, res, next) {
-    res.send(await bulkGet(req, model));
+    res.render(viewName, {warehouses: await bulkGet(req, model)});
 });
 
 /**
@@ -22,7 +23,7 @@ router.get('/', async function(req, res, next) {
  * warehouses/:id   <- Retreives at most one value
  */
 router.get('/:productData', async function(req, res, next) {
-    res.send(await getFromParam(req, model));
+    res.render(viewName, {warehouses: await getFromParam(req, model)});
 });
 
 /***************************************************************************************

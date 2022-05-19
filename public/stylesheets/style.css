@@ -36,3 +36,12 @@ tbody th {
 td {
   border: 2px solid black;
 }
+
+form div {
+  display: inline-block;
+}
+
+form label {
+  font-weight: normal;
+  font-size: 1rem;
+}

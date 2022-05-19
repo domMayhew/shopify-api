@@ -5,6 +5,7 @@ const model = require('../database/data-model').inventoryChanges;
 const getWarehousesById = require('../database/data-model').warehouses.getById;
 const {bulkGet} = require('./queries');
 const {getFromParam} = require('./queries');
+const viewName = 'transactions';
 
 /***************************************************************************************
   * GET
@@ -14,7 +15,7 @@ const {getFromParam} = require('./queries');
  ****************************************************************************************/
 
 router.get('/', async function(req, res, next) {
-    res.send(await bulkGet(req, model));
+    res.render(viewName, {transactions: await bulkGet(req, model)});
 });
 
 /***************************************************************************************

@@ -10,10 +10,11 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var rootRouter = require('./routes/root');
+var rootRouter = require('./routes');
 var productsRouter = require('./routes/products');
 var warehousesRouter = require('./routes/warehouses.js');
 var transactionsRouter = require('./routes/transactions');
+var editRouter = require('./routes/edit');
 
 var app = express();
 
@@ -32,6 +33,7 @@ app.use('/', rootRouter);
 app.use('/products', productsRouter);
 app.use('/warehouses', warehousesRouter);
 app.use('/transactions', transactionsRouter);
+app.use('/edit', editRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,7 +48,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error', err);
+  res.render('error', {err: err});
 });
 
 module.exports = app;

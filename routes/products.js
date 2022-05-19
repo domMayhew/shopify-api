@@ -4,7 +4,7 @@ var router = express.Router();
 const model = require('../database/data-model').products;
 const {bulkGet} = require('./queries');
 const {getFromParam} = require('./queries');
-const viewName = 'view-product';
+const viewName = 'products';
 
 /***************************************************************************************
   * Get methods
@@ -13,7 +13,7 @@ const viewName = 'view-product';
  * /products    <- retrieves products in ascending SKU order up to a default maximum number
  */
 router.get('/', async function(req, res, next) {
-    res.render(viewName, await bulkGet(req, model));
+    res.render(viewName, {products: await bulkGet(req, model)});
 });
 
 /**
@@ -22,7 +22,7 @@ router.get('/', async function(req, res, next) {
  * /products/:name      <- retreives at most one product
  */
 router.get('/:productData', async function (req, res, next) {
-    res.render(viewName, await getFromParam(req, model));
+    res.render(viewName, {products: await getFromParam(req, model)});
 });
 
 /***************************************************************************************

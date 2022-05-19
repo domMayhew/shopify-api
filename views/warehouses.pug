@@ -1,0 +1,30 @@
+extends layout
+
+block content
+    h1 View Warehouses
+    each warehouse, index in warehouses
+        table
+            thead
+                tr
+                    th Warehouse ID
+                    th Name
+                    th City ID
+                    th City Name 
+                    th Current Weather
+                tr
+                    th #{warehouse.id}
+                    th #{warehouse.name}
+                    th #{warehouse.cityId}
+                    th #{warehouse.cityName}
+                    th #{warehouse.weather}
+            tbody
+                if warehouse.inventory.length > 0
+                    tr
+                        th Product SKU
+                        th Product Name
+                        th Quantity
+                    each product, index in warehouse.inventory
+                        tr
+                            td #{product.sku}
+                            td #{product.name}
+                            td #{product.quantity}
