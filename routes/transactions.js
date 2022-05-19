@@ -3,11 +3,14 @@ var router = express.Router();
 
 const model = require('../database/data-model').inventoryChanges;
 const getWarehousesById = require('../database/data-model').warehouses.getById;
-const {bulkGet} = require('./parse-request');
-const {getFromParam} = require('./parse-request');
+const {bulkGet} = require('./queries');
+const {getFromParam} = require('./queries');
 
 /***************************************************************************************
-  * Get methods
+  * GET
+  * /transaction                    <- Retrieves transactions in descending ID order up
+  *                                    a maximum default value.
+  * /transaction?offset=x&count=y   <- Retreives count transactions starting at offset.
  ****************************************************************************************/
 
 router.get('/', async function(req, res, next) {
@@ -15,7 +18,8 @@ router.get('/', async function(req, res, next) {
 });
 
 /***************************************************************************************
-  * POST methods
+  * POST
+  * Requires {productId, warehouseId, quantity}
  ****************************************************************************************/
 
 router.post('/', function(req, res, next) {

@@ -3,6 +3,33 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+h1 {
+  text-align: center;
+}
+
+p {
+  text-align: center;
+}
+
+p.small {
+  font-size: 0.4rem;
+}
+
+.center-horizontal {
+  display: flex;
+  justify-content: center;
+}
+
 a {
   color: #00B7FF;
+  padding: 3rem;
+}
+
+table {
+  border-collapse: collapse;
+  border: 2px solid black;
+}
+
+td {
+  border: 2px solid black;
 }

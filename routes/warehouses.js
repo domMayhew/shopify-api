@@ -2,24 +2,35 @@ var express = require('express');
 var router = express.Router();
 
 const model = require('../database/data-model').warehouses;
-const {bulkGet} = require('./parse-request');
-const {getFromParam} = require('./parse-request');
+const {bulkGet} = require('./queries');
+const {getFromParam} = require('./queries');
 
 /***************************************************************************************
  * Get methods
 ****************************************************************************************/
 
+/**
+ * Retreives warehouses in ascending ID order up to a maximum default value.
+ */
 router.get('/', async function(req, res, next) {
     res.send(await bulkGet(req, model));
 });
 
+/**
+ * warehouses/:name <- Retreives at most one value
+ * OR
+ * warehouses/:id   <- Retreives at most one value
+ */
 router.get('/:productData', async function(req, res, next) {
     res.send(await getFromParam(req, model));
 });
 
 /***************************************************************************************
-  * POST methods
+  * POST
  ****************************************************************************************/
+/**
+ * requires {name, cityId}
+ */
 router.post('/', function(req, res, next) {
     const status = model.create(req.body) ? 400 : 200;
     res.status(status).send();
@@ -28,14 +39,20 @@ router.post('/', function(req, res, next) {
 /***************************************************************************************
   * UPDATE methods
  ****************************************************************************************/
+/**
+ * requires {name, cityId}
+ */
 router.put('/', function(req, res, next) {
     const status = model.update(req.body) ? 400 : 200;
     res.status(status).send();
 });
 
 /***************************************************************************************
-  * UPDATE methods
+  * DELETE methods
  ****************************************************************************************/
+/**
+ * /warehouses/:id
+ */
 router.delete('/:id', function(req, res, next) {
     const status = model.delete(req.params.id) ? 400 : 200;
     res.status(status).send();

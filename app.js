@@ -10,7 +10,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
+var rootRouter = require('./routes/root');
 var productsRouter = require('./routes/products');
 var warehousesRouter = require('./routes/warehouses.js');
 var transactionsRouter = require('./routes/transactions');
@@ -28,7 +28,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.use('/', indexRouter);
+app.use('/', rootRouter);
 app.use('/products', productsRouter);
 app.use('/warehouses', warehousesRouter);
 app.use('/transactions', transactionsRouter);
@@ -46,7 +46,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error', err);
 });
 
 module.exports = app;

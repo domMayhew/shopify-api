@@ -1,0 +1,20 @@
+extends layout
+
+block content
+    h1 View Product
+    p(class='small') #{products}
+    each product, index in products
+        table
+            thead
+                tr
+                    th SKU #{product.sku}
+                    th NAME #{product.name}
+                    th PRICE #{product.price}
+                    th(colspan="4") DESCRIPTION #{product.description}
+            tbody
+                each record, index in product.inventory
+                    tr
+                        td CITYID #{record.cityId}
+                        td CITYNAME #{record.cityName}
+                        td WAREHOUSE ID #{record.warehouseId}
+                        td WAREHOUSE NAME #{record.warehouseName}

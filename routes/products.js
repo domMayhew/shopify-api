@@ -2,17 +2,24 @@ var express = require('express');
 var router = express.Router();
 
 const model = require('../database/data-model').products;
-const {bulkGet} = require('./parse-request');
-const {getFromParam} = require('./parse-request');
+const {bulkGet} = require('./queries');
+const {getFromParam} = require('./queries');
 
 /***************************************************************************************
   * Get methods
  ****************************************************************************************/
-
+/**
+ * /products    <- retrieves products in ascending SKU order up to a default maximum number
+ */
 router.get('/', async function(req, res, next) {
     res.send(await bulkGet(req, model));
 });
 
+/**
+ * /products/:sku       <- retreives at most one product
+ * OR
+ * /products/:name      <- retreives at most one product
+ */
 router.get('/:productData', async function (req, res, next) {
     res.send(await getFromParam(req, model));
 });
@@ -20,7 +27,9 @@ router.get('/:productData', async function (req, res, next) {
 /***************************************************************************************
   * POST methods
  ****************************************************************************************/
-
+/**
+ * requires {name, price, description}
+ */
 router.post('/', function(req, res, next) {
     const status = model.create(req.body) ? 400 : 200;
     res.status(status).send();
@@ -29,7 +38,9 @@ router.post('/', function(req, res, next) {
 /***************************************************************************************
  * UPDATE methods
  ****************************************************************************************/
-
+/**
+ * requires {name, price, description}
+ */
 router.put('/', function(req, res, next) {
     const status = model.update(req.body) ? 400 : 200;
     res.status(status).send();
@@ -38,6 +49,9 @@ router.put('/', function(req, res, next) {
 /***************************************************************************************
  * DELETE methods
  ****************************************************************************************/
+/**
+ * /products/:sku
+ */
 router.delete('/:sku', function(req, res, next) {
     const status = model.delete(req.params.sku) ? 400 : 200;
     res.status(status).send();
