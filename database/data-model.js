@@ -380,18 +380,24 @@ const getWeatherForCity = createCache(async (cityId) => {
 /**
  * A caching/memoizing function. Checks to see if there is a previously computed value within the specified time frame.
  * If none is found or the old value is expired, a new value is computed.
+ * The function passed must take a single input that can be used as an object key.
  * @param {*} f the function that the cache is being created for.
  * @param {*} minutes the maximum permissible age of previously computed data before a new value is computed.
  * @returns the a version of f that uses a cache.
  */
-function createCache(f, minutes) {
+function createCache(f, minutes, logStats = false) {
     const cache = {};
+    const stats = {cacheHits: 0, cacheMisses: 0}
     return async (arg) => {
         // Check if argument has been previously computed and is in cache.
         if (cache[arg] && cache[arg].timestamp - Date.now() < minutes * 60 * 1000) {
+            stats.cacheHits++;
+            if (logStats) console.log(stats);
             return cache[arg].data;
         } else { // Value was not found in cache, create new entry and compute new value.
-            cache[arg] = { data: await f(arg), timestamp: Date.now() };
+            stats.cacheMisses++;
+            if (logStats) console.log(stats);
+            cache[arg] = { data: f(arg), timestamp: Date.now() };
             return cache[arg].data;
         }
     }

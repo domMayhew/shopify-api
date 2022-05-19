@@ -7,10 +7,6 @@ router.get('/', function(req, res, next) {
   res.render('layout');
 });
 
-router.get('/view-product', async function(req, res, next) {
-  res.render('view-product', {products: await model.products.get()});
-});
-
 router.get('/view-warehouse', function(req, res, next) {
   res.render('view-warehouse');
 });

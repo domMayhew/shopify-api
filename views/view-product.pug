@@ -1,20 +1,36 @@
 extends layout
 
+//- -var descriptonSpan = 4;
+
 block content
-    h1 View Product
-    p(class='small') #{products}
+    h1 View Products
     each product, index in products
         table
             thead
                 tr
-                    th SKU #{product.sku}
-                    th NAME #{product.name}
-                    th PRICE #{product.price}
-                    th(colspan="4") DESCRIPTION #{product.description}
+                    th SKU
+                    th Name
+                    th Price 
+                    th(colspan=3) Description
+                tr
+                    th #{product.sku}
+                    th #{product.name}
+                    th #{product.price}
+                    th(colspan=3) #{product.description}
             tbody
-                each record, index in product.inventory
+                if product.inventory.length > 0
                     tr
-                        td CITYID #{record.cityId}
-                        td CITYNAME #{record.cityName}
-                        td WAREHOUSE ID #{record.warehouseId}
-                        td WAREHOUSE NAME #{record.warehouseName}
+                        th City Id
+                        th City Name
+                        th Warehouse Id
+                        th Warehouse Name
+                        th Quantity
+                        th Current Weather
+                    each record, index in product.inventory
+                        tr
+                            td #{record.cityId}
+                            td #{record.cityName}
+                            td #{record.warehouseId}
+                            td #{record.warehouseName}
+                            td #{record.quantity}
+                            td #{record.weather}

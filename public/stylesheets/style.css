@@ -11,10 +11,6 @@ p {
   text-align: center;
 }
 
-p.small {
-  font-size: 0.4rem;
-}
-
 .center-horizontal {
   display: flex;
   justify-content: center;
@@ -28,6 +24,13 @@ a {
 table {
   border-collapse: collapse;
   border: 2px solid black;
+  width: 100%;
+  margin: 1rem;
+}
+
+tbody th {
+  border: 2px solid black;
+  font-weight: bold;
 }
 
 td {
