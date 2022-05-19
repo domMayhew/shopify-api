@@ -2,3 +2,39 @@ extends layout
 
 block content
   h1 Edit
+  h2 New Product
+    form(id="productGET" action="/products" method="post")
+      div
+        label(for="name") Name
+        input(type="text" id="name" name="name")
+      div
+        label(for="price") Price
+        input(type="number" id="price" name="price" step="0.01")
+      div
+        label(for="description") Description
+        input(type="text" id="description" name="description")
+      input(type="submit" value="Create")
+      
+  h2 Update Existing Product
+    // _method query used with methodOverride middle ware to turn this POST into a PUT
+    form(id="productPUT" action="/products?_method=put" method="post")
+      div
+        label(for="sku") SKU
+        input(type="number" id="sku" name="sku")
+      div
+        label(for="name") Name
+        input(type="text" id="name" name="name")
+      div
+        label(for="price") Price
+        input(type="number" id="price" name="price" step="0.01")
+      div
+        label(for="description") Description
+        input(type="text" id="description" name="description")
+      input(type="submit" value="Update")
+
+  h2 Delete a product
+    form(id="productDELETE" action="/products?_method=delete" method="post")
+      div
+        label(for="sku") SKU 
+        input(type="number" id="sku" name="sku")
+      input(type="submit" value="Delete")

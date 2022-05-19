@@ -31,9 +31,9 @@ router.get('/:productData', async function (req, res, next) {
 /**
  * requires {name, price, description}
  */
-router.post('/', function(req, res, next) {
+router.post('/', async function(req, res, next) {
     const status = model.create(req.body) ? 400 : 200;
-    res.status(status).send();
+    res.render(viewName, {products: await bulkGet(req, model)});
 });
 
 /***************************************************************************************
@@ -42,20 +42,20 @@ router.post('/', function(req, res, next) {
 /**
  * requires {name, price, description}
  */
-router.put('/', function(req, res, next) {
+router.put('/', async function(req, res, next) {
     const status = model.update(req.body) ? 400 : 200;
-    res.status(status).send();
+    res.render(viewName, {products: await bulkGet(req, model)});
 });
 
 /***************************************************************************************
  * DELETE methods
  ****************************************************************************************/
 /**
- * /products/:sku
+ * requires {sku}
  */
-router.delete('/:sku', function(req, res, next) {
-    const status = model.delete(req.params.sku) ? 400 : 200;
-    res.status(status).send();
+router.delete('/', async function(req, res, next) {
+    const status = model.delete(req.body.sku) ? 400 : 200;
+    res.render(viewName, {products: await bulkGet(req, model)});
 });
 
 module.exports = router;
