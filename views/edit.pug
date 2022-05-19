@@ -68,3 +68,16 @@ block content
         label(for="id") ID
         input(type="number" id="id" name="id")
       input(type="submit" value="Delete")
+
+  h2 Add a transaction #{'('}Automatically updates the stock in that warehouse.#{')'}
+    form(id="transactionPOST" action="/transactions" method="post")
+      div
+        label(for="sku") Product SKU 
+        input(type="number" name="sku" id="sku")
+      div
+        label(for="warehouseId") Warehouse ID
+        input(type="number" name="warehouseId" id="warehouseId")
+      div
+        label(for="quantity") Quantity
+        input(type="number" name="quantity" id="quantity")
+      input(type="submit" value="Create") 

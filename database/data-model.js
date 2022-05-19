@@ -454,10 +454,15 @@ function createWarehouse({name, cityId}) {
 
 function createTransaction({sku, warehouseId, quantity}) {
     try {
-        let currInventory = getInventoryForWarehouse(warehouseId).filter(record => record.sku == sku)[0].quantity;
-        if (!currInventory) {
+        let currInventory = getInventoryForWarehouse(warehouseId).filter(record => record.sku == sku);
+        if (currInventory.length == 0) {
             currInventory = 0;
+        } else {
+            currInventory = currInventory[0].quantity;
         }
+
+        quantity = parseInt(quantity);
+
         if (currInventory + quantity < 0) {
             return false;
         } else {

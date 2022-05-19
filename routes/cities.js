@@ -3,7 +3,10 @@ var router = express.Router();
 const {cityQueries} = require('../database/data-model');
 const viewName = 'cities';
 
-/* GET home page. */
+/**
+ * GET Cities page
+ * Does not need to be an asynchronous call because viewing cities does not return weather data.
+ */
 router.get('/', function(req, res, next) {
     const name = req.query.name;
     const limit = req.query.limit;
