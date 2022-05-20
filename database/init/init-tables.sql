@@ -47,7 +47,7 @@ CREATE TABLE inventory (
 -- Quantity is the number of products added to the specified warehouse
 -- Positive quantities add stock to the warehouse,
 -- negative quantities remove stock from the warehouse.
-CREATE TABLE transaction (
+CREATE TABLE inventory_change (
     id INTEGER PRIMARY KEY,
     sku INTEGER NOT NULL,
     warehouse_id INTEGER NOT NULL,

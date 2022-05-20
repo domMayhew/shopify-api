@@ -1,12 +1,29 @@
 # Inventory Tracking Web App
-## Quick Start
+## Quickstart - Replit
+```
+# To run
+# Click "Run" or "Open Website"
+
+# To reset DB to default starting values (be aware this can take a long time)
+# From the Replit terminal
+npm database/init/init.js
+```
+
+## Quickstart - GitHub
 ```
 # Clone this repo
 
-# Run the app
+# Install dependencies
+npm install
+
+# Run project
 npm start
 
-# Use a web browser to visit http://localhost:3000/
+# To view project
+# Open a browser and visit http://localhost:3000/
+
+# To reinitialize db (be aware this can take a long time)
+npm database/init/init.js
 ```
 
 ## Introduction
@@ -24,7 +41,7 @@ The vast majority of interesting logic/code in this app is contained in the `/da
 **Second**, results from previous calls to the Open Weather API are cached through a technique called memoization that uses closures to store a private cache for a particular function. The default behaviour is to only make a new API call if the previously retrieved weather data is more than 30 minutes old.
 
 ## Dependencies
-This repo contains the necessary dependencies. They are: [`ExpressJS`](https://www.npmjs.com/package/express) and [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) distrbuted by NPM.
+This repo depends on [`ExpressJS`](https://www.npmjs.com/package/express) and [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3), both distrbuted by NPM. If viewing this project from Replit, the dependencies are managed automatically. See the quickstart instructions for installing dependencies when cloning this repo from GitHub.
 
 This app uses the [Open Weather API](https://openweathermap.org/api).
 
