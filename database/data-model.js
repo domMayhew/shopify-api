@@ -180,9 +180,6 @@ async function getProducts(offset = 0, count = 50) {
         promises[i] = getInventoryForSKU(products[i].sku)
             .then(resolvedValue => products[i].inventory = resolvedValue);
     }
-    let i = 0;
-    while(i++ < 100000000)
-        ;
     await Promise.all(promises);
     return products;
 }
